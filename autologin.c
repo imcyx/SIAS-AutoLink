@@ -3,8 +3,12 @@
 #include <time.h>
 #include <stdlib.h>
 #include <curl/curl.h>
-//谢谢你，陌生人，你提供的思路让我得以在OpenWRT等嵌入式平台实现自动登录。
-//代码可能有点屎
+// 谢谢你，陌生人，你提供的思路让我得以在OpenWRT等嵌入式平台实现自动登录。
+// 代码可能有点屎
+
+// 用法：./program account password 网络接口
+// 一口多号用 macvlan, 根本上杜绝多设备检测
+
 // RC4加密算法
 char *do_encrypt_rc4(char *src, char *passwd)
 {
@@ -63,6 +67,7 @@ int main(int argc, char *argv[])
     // 利用RC4加密算法获取基于时间戳的密码
     char *account = argv[1];
     char *password = argv[2];
+    char *interface = argv[3]; // 新增：网络接口
     char tag_str[20];
     sprintf(tag_str, "%d", tag);
     char *pwd = do_encrypt_rc4(password, tag_str);
@@ -78,6 +83,7 @@ int main(int argc, char *argv[])
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(curl, CURLOPT_INTERFACE, interface); // 新增：设置网络接口
         // 提交登录
         CURLcode res = curl_easy_perform(curl);
         // 输出登录结果
